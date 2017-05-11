@@ -28,3 +28,19 @@
  (split-ingredients-list '(bake (a 3 "sdf") (a 4 "sdf")))
 ;Value 14: ((a 3 "sdf") (a 4 "sdf"))
 |#
+
+(cd "5pset")
+(load "load.scm")
+(cd "../")
+
+(define ingredient-simplifier
+  (rule-simplifier
+   (list
+
+    (rule `((?? x) ((? a) (? b ,number?) (? c)) ((? a) (? d
+							    ,number?)
+						   (? c))
+	    (?? y))
+	  `(,@x (,a ,(+ b d) ,c) ,@y))
+
+    )))
