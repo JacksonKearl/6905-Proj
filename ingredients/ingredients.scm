@@ -37,10 +37,23 @@
   (rule-simplifier
    (list
 
-    (rule `((?? x) ((? a) (? b ,number?) (? c)) ((? a) (? d
+    (rule `((?? x) ((? a) (? b ,number?) (? c)) (?? y)  ((? a) (? d
 							    ,number?)
 						   (? c))
-	    (?? y))
-	  `(,@x (,a ,(+ b d) ,c) ,@y))
+	    (?? z))
+	  `(,@x (,a ,(+ b d) ,c) ,@y ,@z))
 
     )))
+
+#|
+
+ (ingredient-simplifier '((a 3 g) (a 4 g)))
+;Value 15: ((a 7 g))
+
+ (ingredient-simplifier  '((a 3 "sdf") (b 4 "sdf") (a 4 "sdf")))
+;Value 16: ((a 7 "sdf") (b 4 "sdf"))
+
+ (ingredient-simplifier '((a 3 g) (a 4 h)))
+;Value 17: ((a 3 g) (a 4 h))
+
+|#
