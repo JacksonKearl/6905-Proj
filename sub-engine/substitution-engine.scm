@@ -5,15 +5,16 @@
     (lambda (possibilities)
       (list-amb (filter acceptable? possibilities)))))
 
-;;; return a function which when given a symbol of an item will return true iff that symbol is valid wrt the environment
+;;; return a function which when given a item will return true iff that item
+;;;   (and only that single item, not sublists) is valid wrt the environment
 (define (acceptable-given-environment environment)
   (let ((acceptable (car environment))
         (rejectable (cadr environment)))
-    (lambda (symbol)
+    (lambda (item)
         (cond
           ((and (null? acceptable) (null? rejectable)) #t)
-          ((null? rejectable) (bool (memv symbol acceptable)))
-          ((null? acceptable) (not  (memv symbol rejectable)))
+          ((null? rejectable) (bool (memv (car item) acceptable)))
+          ((null? acceptable) (not  (memv (car item) rejectable)))
           (else (error "Can not supply both accptable and rejectable items"))))))
 
 ;;; return a function which when given a recpie return true iff that recpie is valid wrt the environment
@@ -22,8 +23,8 @@
         (rejectable (cadr enviornment)))
     (lambda (recipe)
       (if (base-component? recipe)
-        ((acceptable-given-environment enviornment) (car recipe))
-        (if (not  ((acceptable-given-environment enviornment) (caar recipe)))
+        ((acceptable-given-environment enviornment) recipe)
+        (if (not  ((acceptable-given-environment enviornment) (car recipe)))
             #f
             (apply boolean/and
               (map
@@ -52,10 +53,10 @@
 (define (reform-recipe recipe environment substitutions)
   (let ((acceptable (acceptable-given-environment environment)))
     (if (base-component? recipe)
-      (if (not (acceptable (car recipe)))
+      (if (not (acceptable recipe))
           (sub-base-component recipe environment substitutions)
           recipe)
-      (if (not  (acceptable (caar recipe)))
+      (if (not  (acceptable (car recipe)))
           (cons (sub-means-of-combination (car recipe) environment substitutions)
                 (map (lambda (component) (reform-recipe component environment substitutions)) (cdr recipe)))
           (cons (car recipe)

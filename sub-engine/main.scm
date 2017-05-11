@@ -13,6 +13,6 @@
         (garlic ((amount: 2 unit)))
         (lemon-juice ((amount: 2 tablespoons)))))))
 
-(define pantry '(() ()))
+(define pantry '(() (deep-fry lemon-juice parsley)))
 
-(print-recipe (reform-recipe falafel pantry substitutions))
+(amb-possibility-list (print-recipe (reform-recipe falafel pantry substitutions)))
