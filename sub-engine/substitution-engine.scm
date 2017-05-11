@@ -10,15 +10,6 @@
   (let ((acceptable (car environment))
         (rejectable (cadr environment)))
     (lambda (symbol)
-        ;(display "\n      checking if the symbol: ");
-        ;(display symbol);
-        ;(display " is acceptable... ");
-        ;(cond
-        ;  ((and (null? acceptable) (null? rejectable)) (display "y"));
-        ;  ((null? rejectable) (display (bool (memv symbol acceptable))));
-        ;  ((null? acceptable) (display (not  (memv symbol rejectable))));
-        ;  (else (error "Can not supply both accptable and rejectable items")));
-        ;(display "\n");
         (cond
           ((and (null? acceptable) (null? rejectable)) #t)
           ((null? rejectable) (bool (memv symbol acceptable)))
@@ -59,9 +50,6 @@
 (define (base-component? x) (symbol? (car x)))
 
 (define (reform-recipe recipe environment substitutions)
-  ;(display "\n\nAttempting to find substitutions for: ");
-  ;(display recipe);
-  ;(display "\n");
   (let ((acceptable (acceptable-given-environment environment)))
     (if (base-component? recipe)
       (if (not (acceptable (car recipe)))
