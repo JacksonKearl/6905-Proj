@@ -13,6 +13,6 @@
         (garlic ((amount: 2 unit)))
         (lemon-juice ((amount: 2 tablespoons)))))))
 
-(define pantry '(() (lemon-juice)))
+(define pantry '(() ()))
 
 (print-recipe (reform-recipe falafel pantry substitutions))

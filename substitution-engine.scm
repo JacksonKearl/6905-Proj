@@ -1,7 +1,7 @@
 ;;; return a function which, when given a list of possible substitutions, returns
 ;;;  an amb which may be any of the valid solutions w.r.t the enviormnet among that list.
 (define (iter-amb environment)
-  (let ((acceptable? (lambda (item) ((acceptable-given-environment environment) (car item)))))
+  (let ((acceptable? (lambda (item) ((acceptable-given-environment-recursive environment)  item))))
     (lambda (possibilities)
       (list-amb (filter acceptable? possibilities)))))
 
@@ -24,6 +24,21 @@
           ((null? rejectable) (bool (memv symbol acceptable)))
           ((null? acceptable) (not  (memv symbol rejectable)))
           (else (error "Can not supply both accptable and rejectable items"))))))
+
+;;; return a function which when given a recpie return true iff that recpie is valid wrt the environment
+(define (acceptable-given-environment-recursive enviornment)
+  (let ((acceptable (car enviornment))
+        (rejectable (cadr enviornment)))
+    (lambda (recipe)
+      (if (base-component? recipe)
+        ((acceptable-given-environment enviornment) (car recipe))
+        (if (not  ((acceptable-given-environment enviornment) (caar recipe)))
+            #f
+            (apply boolean/and
+              (map
+                (lambda (component) ((acceptable-given-environment-recursive enviornment) component))
+                (cdr recipe))))))))
+
 
 
 ;;; return (symbol, lambda) pair such that the lambda, when passed an environment and a (sym (args ...)) list
