@@ -88,3 +88,6 @@
 ;Value 45: ((honey 14/3 tbsp))
 
 |#
+
+(define (get-ingredients recipe)
+  (ingredient-simplifier (split-ingredients-list recipe)))
