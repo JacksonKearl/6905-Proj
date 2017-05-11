@@ -1,0 +1,10 @@
+;Instruction Extraction
+
+(define (instruction? node)
+  (if (list? node)
+      (if (list? (cadr node))
+	  #t
+	  #f)
+      #f))
+
+
