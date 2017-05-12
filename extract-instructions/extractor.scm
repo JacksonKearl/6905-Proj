@@ -1,6 +1,6 @@
-(cd "..")
-(load "load")
-(cd "extract-instructions")
+;(cd "..")
+;(load "load")
+;(cd "extract-instructions")
 
 (define (all-base-components? recipe)
   (if (null? recipe)
@@ -22,11 +22,11 @@
 
 (define (recipe->instructions recipe)
   (let ((instructions '(*null*)))
+    (set-cdr! instructions '())
     (execute-extract-deepest recipe instructions)
     (cdr instructions)))
 
 (define (pretty-print-instructions recipe)
-  (display "\n\n")
   (let ((instructions (recipe->instructions recipe))
         (counter 1))
     (map (lambda (instruction)
@@ -36,8 +36,7 @@
         (pretty-print instruction)
         (display "\n")
         (set! counter (+ 1 counter)))
-      instructions))
-  (display "\n\n"))
+      instructions)))
 
 #|
 (pretty-print-instructions
