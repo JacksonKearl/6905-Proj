@@ -21,8 +21,8 @@
       'lemon-juice
       iter-amb
       (lambda (params)
-        `(((combine ())
+        `(((combine (name: diluted-lime-juice))
             (lime-juice ,(scale params '((amount: 1/2))))
             (water      ,(scale params '((amount: 1/2)))))
-          ((boil ((time: 5 min)))
+          ((boil ((time: 5 min) (name: concentrated-orange-juice)))
             (orange-juice ,(scale params '((amount: 2))))))))))
