@@ -1,7 +1,6 @@
 ;Instruction Extraction
 
 
-
 (define (instruction? node)
   (not (ingredient? node)))
 
@@ -56,7 +55,25 @@ instructions-stack
 				     (instruction-as-ingredient (caar node-children)))
 			     (cdr node-children))
 		       (split-instructions (car node-children))))))))
+#|
+(define new-recipe 
+  '(bake
+   (mix
+    (eggs 1 "egg")
+    (milk 1.5 "cups")
+    (sugar 1 "cups")
+    (sift
+     (flour 2 "cups")
+     (baking-soda 1 "tsp"))
+    (vanila 0.5 "tsp"))))
+;Value: new-recipe
 
+(split-instructions new-recipe)
+;Value 9: ((bake |ingredients that were mix|) 
+           (mix (eggs 1 "egg") (milk 1.5 "cups") (sugar 1 "cups") |ingredients that were sift| 
+            (vanila .5 "tsp")) 
+           (sift (flour 2 "cups") (baking-soda 1 "tsp")))
+|#
 
 (define (instructions-in-order instructions)
   (if (eq? (length instructions) 1)
