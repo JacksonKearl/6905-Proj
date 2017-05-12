@@ -32,7 +32,7 @@
     (map (lambda (instruction)
         (display "\nStep ")
         (display counter)
-        (display ": ")
+        (display ":\n")
         (pretty-print instruction)
         (display "\n")
         (set! counter (+ 1 counter)))
