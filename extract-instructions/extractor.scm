@@ -26,7 +26,8 @@
 (define (recipe->instructions recipe)
   (let ((instructions '(*null*)))
     (set-cdr! instructions '())
-    (split-instructions (sub-lang->matcher-lang  recipe))))
+    (execute-extract-deepest recipe instructions)
+    (cdr instructions)))
 
 (define (reverse1 l)
   (if (null? l)

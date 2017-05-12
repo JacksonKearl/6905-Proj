@@ -64,12 +64,12 @@ instructions-stack
       (append (instructions-in-order (cdr instructions))
 	      (list (car instructions)))))
 
+(define (extract-instructions recipe)
+  (instructions-in-order
+   (split-instructions (recipe))))
+
+
 #|
 (instructions-in-order '((a) (b) (c)))
 ;Value : ((c) (b) (a))
 |#
-
-
-(define (extract-instructions recipe)
-  (instructions-in-order
-   (split-instructions (recipe))))
