@@ -6,7 +6,7 @@
         (bool (memv (find-in-dict-list 'measure: (cadr item)) (cdr environment)))
         #t)))
 
-(define (serial-parallel-amb environment)
+(define (target-value-amb environment)
   (lambda (possibility)
     (let ((substitution (car possibility))
           (target (cadr possibility)))
@@ -29,7 +29,7 @@
 (define substitutions
   `(,(create-subtitution
       'resistor
-      serial-parallel-amb
+      target-value-amb
       (lambda (params)
         (amb
           `((resistor ((measure: ,(list-amb E24)))) ,(find-in-dict-list 'measure: params))
@@ -46,5 +46,5 @@
   (pretty-print  circuit)
   (display "\n\n"))
 
-;(disp-circuit-with-resistance (reform-recipe my-circuit `(0.01 ,E24) substitutions))
+(disp-circuit-with-resistance (reform-recipe my-circuit `(0.01 ,E24) substitutions))
 (amb-possibility-list (disp-circuit-with-resistance (reform-recipe my-circuit `(0.001 ,E24) substitutions)))

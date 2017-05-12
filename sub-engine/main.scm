@@ -3,9 +3,11 @@
 (define falafel
   '((deep-fry ((temp: 350 F) (time: 4 min)))
     ((let-rest ((time: 2 hour)))
-      ((food-process ((time: 5 min) (description: "scraping occasionally")))
+      ((food-process ((time: 5 min)
+                      (description: "scrape occasionally")))
         ((soak ((time: 12 hour)))
-          (garbonzo-bean ((amount: 1/2 cup) (description: "cannot be canned!"))))
+          (garbonzo-bean ((amount: 1/2 cup)
+                          (description: "cannot be canned!"))))
         ((dice ((description: "coarse")))
           (yellow-onion ((amount: 1/4 unit))))
         ((chop ((description: "coarse")))
@@ -15,4 +17,5 @@
 
 (define pantry '(() (deep-fry lemon-juice parsley)))
 
-(amb-possibility-list (print-recipe (reform-recipe falafel pantry substitutions)))
+(amb-possibility-list (print-recipe
+  (reform-recipe falafel pantry substitutions)))
