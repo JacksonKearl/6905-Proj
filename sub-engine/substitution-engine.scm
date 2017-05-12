@@ -19,17 +19,15 @@
 
 ;;; return a function which when given a recpie return true iff that recpie is valid wrt the environment
 (define (acceptable-given-environment-recursive enviornment)
-  (let ((acceptable (car enviornment))
-        (rejectable (cadr enviornment)))
-    (lambda (recipe)
-      (if (base-component? recipe)
-        ((acceptable-given-environment enviornment) recipe)
-        (if (not  ((acceptable-given-environment enviornment) (car recipe)))
-            #f
-            (apply boolean/and
-              (map
-                (lambda (component) ((acceptable-given-environment-recursive enviornment) component))
-                (cdr recipe))))))))
+  (lambda (recipe)
+    (if (base-component? recipe)
+      ((acceptable-given-environment enviornment) recipe)
+      (if (not  ((acceptable-given-environment enviornment) (car recipe)))
+          #f
+          (apply boolean/and
+            (map
+              (lambda (component) ((acceptable-given-environment-recursive enviornment) component))
+              (cdr recipe)))))))
 
 
 

@@ -41,3 +41,14 @@
   (display "\n")
   (pretty-print recipe)
   (display "\n"))
+
+(define (roughly-equal? actual target error)
+  (let ((%error (/ (- actual target) target)))
+    (< (abs %error) error)))
+
+(define (shuffle x)
+  (do ((v (list->vector x)) (n (length x) (- n 1)))
+      ((zero? n) (vector->list v))
+    (let* ((r (random n)) (t (vector-ref v r)))
+      (vector-set! v r (vector-ref v (- n 1)))
+      (vector-set! v (- n 1) t))))
