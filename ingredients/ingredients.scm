@@ -55,6 +55,9 @@
   (rule-simplifier
    (list
 
+    (rule `((?? y) (((?? x))) (?? z))
+	  `(,@y (,@x) ,@z)) 
+
     (rule `((?? x) (? a) (? b) (?? y))
 	  (and (ingredient<? b a)
 	       `(,@x ,b ,a ,@y)))
