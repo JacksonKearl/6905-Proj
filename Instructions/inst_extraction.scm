@@ -34,7 +34,7 @@ instructions-stack
 
 
 (define (instruction-as-ingredient instruction)
-  (list (string->symbol (string-append "ingredients that were " (symbol->string instruction)))))
+  `((,(string->symbol (string-append "ingredients that were " (symbol->string instruction) "ed") )    )) )
 
 #|
 (instruction-as-ingredient 'bake)
@@ -52,7 +52,7 @@ instructions-stack
 	    (if (ingredient? (car node-children))
 		(loop (append instr (list (car node-children)))
 		      (cdr node-children))
-		(begin (loop (append instr 
+		(begin (loop (append instr
 				     (instruction-as-ingredient (caar node-children)))
 			     (cdr node-children))
 		       (split-instructions (car node-children))))))))
@@ -70,10 +70,6 @@ instructions-stack
 |#
 
 
-(define (extract-instructions recipe) 
-  (instructions-in-order 
+(define (extract-instructions recipe)
+  (instructions-in-order
    (split-instructions (recipe))))
-
-
-
-
