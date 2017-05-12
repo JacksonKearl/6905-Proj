@@ -30,6 +30,11 @@
         ((eqv? key (caar dict-list)) (cadar dict-list))
         (else (find-in-dict-list key (cdr dict-list)))))
 
+(define (find-in-dict-list-full key dict-list)
+  (cond ((null? dict-list) (amb))
+        ((eqv? key (caar dict-list)) (cdar dict-list))
+        (else (find-in-dict-list key (cdr dict-list)))))
+
 (define (find-in-dict-list-or-default key dict-list default)
   (cond ((null? dict-list) default)
         ((eqv? key (caar dict-list)) (cadar dict-list))

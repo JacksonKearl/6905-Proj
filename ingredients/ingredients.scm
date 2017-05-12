@@ -50,7 +50,7 @@
  (ingredient<? '(a 4 c) '(a 5 b))
 ;Value: #f
 |#
-  
+
 (define ingredient-simplifier
   (rule-simplifier
    (list
