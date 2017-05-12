@@ -1,4 +1,4 @@
-(load "load")
+;(load "load")
 
 (define (sub-lang-base-component->matcher-lang-leaf base-component)
   (if (in-dict-list? 'amount: (cadr base-component))
@@ -32,9 +32,29 @@
 ;Value 3: (deep-fry (let-rest (food-process (soak (garbonzo-bean 1/2 cup)) (dice (yellow-onion 1/4 unit)) (chop (parsley 1/4 cup)) (garlic 2 unit) (lemon-juice 2 tablespoons))))
 |#
 
+(define ingredient-name car)
+(define ingredient-unit caddr)
+(define ingredient-quantity cadr)
+
+(define (flatten x)
+  (cond ((null? x) '())
+        ((and (pair? x) (not (symbol? (car x)))) (append (flatten (car x)) (flatten (cdr x))))
+        (else (list x))))
 
 (define (extract-ingredients recipe)
   (get-ingredients (sub-lang->matcher-lang recipe)))
+
+(define (pretty-print-ingredients recipe)
+  (let ((ingredients (flatten (extract-ingredients recipe))))
+      (map (lambda (x)
+        (display " - ")
+        (display (ingredient-quantity x))
+        (display " ")
+        (display (ingredient-unit x))
+        (display " of ")
+        (display (ingredient-name x))
+        (display "\n")) ingredients)))
+
 
 #|
 (extract-ingredients
@@ -57,3 +77,14 @@
         (lemon-juice ((amount: 2 tablespoons)))))))
 ;Value 4: (((((garbonzo-bean 1/2 cup)) ((yellow-onion 1/4 unit)) ((parsley 1/4 cup)) (garlic 2 unit) (lemon-juice 2 tablespoons))))
 |#
+
+(define (pretty-print-recipe name recipe)
+  (display "\n\n")
+  (display name)
+  (display "\n-------------------\n\n")
+  (display "Ingredients:\n")
+  (pretty-print-ingredients recipe)
+  (display "\n\n")
+  (display "Instructions:\n")
+  (pretty-print-instructions recipe)
+  (display "\n\n"))

@@ -60,6 +60,18 @@
           (cons (car recipe)
                 (map (lambda (component) (reform-recipe component environment substitutions)) (cdr recipe)))))))
 
+(define (customize-recipe recipe environment)
+  (let ((acceptable (acceptable-given-environment environment)))
+    (if (base-component? recipe)
+      (if (not (acceptable recipe))
+          (sub-base-component recipe environment substitutions)
+          recipe)
+      (if (not  (acceptable (car recipe)))
+          (cons (sub-means-of-combination (car recipe) environment substitutions)
+                (map (lambda (component) (reform-recipe component environment substitutions)) (cdr recipe)))
+          (cons (car recipe)
+                (map (lambda (component) (reform-recipe component environment substitutions)) (cdr recipe)))))))
+
 
 (define (sub-means-of-combination means-of-combination environment substitutions)
   ((find-in-dict-list (car means-of-combination) substitutions) environment means-of-combination))
