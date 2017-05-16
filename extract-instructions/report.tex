@@ -1,0 +1,320 @@
+%Outline:
+% 1. Project Overview & Inspiration
+%   jkearl   -- complete
+%
+% 2 DSL
+% 2.1 Overview & Inspiration
+%   _______  -- incomplete
+% 2.2 Ingredient Extraction:
+%   sanchitb -- incomplete
+% 2.3 Instruction Extraction
+%   guerrce  -- incomplete
+%
+% 3 Substitution Engine
+% 3.1 Overview & Inspiration
+%   jkearl   -- incomplete
+% 3.2 Implementation
+%   jkearl   -- incomplete
+%
+% 4 Extensibility & Future Work
+% 4.1 Extensibility
+%   jkearl   -- complete
+% 4.2 Future Work
+%   jkearl   -- complete
+%
+% 5 Conclusion & Final Thoughts
+%   _______  -- incomplete
+%
+
+% \begin{minted}[mathescape,
+%                linenos,
+%                numbersep=5pt,
+%                gobble=0,
+%                frame=lines,
+%                framesep=2mm]{scheme}
+
+% (define (pretty-print-instructions recipe)
+%   (let ((instructions  (recipe->instructions recipe))
+%         (counter 1))
+%     (map (lambda (instruction)
+%         (display "\nStep ")
+%         (display counter)
+%         (display ":\n")
+%         (pretty-print instruction)
+%         (display "\n")
+%         (set! counter (+ 1 counter)))
+%       instructions)))
+%\end{minted}
+
+% Edit the title below to update the display in My Documents
+%\title{6.945 Project Report}
+%
+%%% Preamble
+\documentclass[paper=a4, fontsize=11pt]{scrartcl}
+\usepackage[T1]{fontenc}
+\usepackage{fourier}
+
+\usepackage[english]{babel}															% English language/hyphenation
+\usepackage[protrusion=true,expansion=true]{microtype}
+\usepackage{amsmath,amsfonts,amsthm} % Math packages
+\usepackage[pdftex]{graphicx}
+\usepackage{url}
+\usepackage{minted}
+
+
+%%% Custom sectioning
+\usepackage{sectsty}
+\allsectionsfont{\centering \normalfont\scshape}
+
+
+%%% Custom headers/footers (fancyhdr package)
+\usepackage{fancyhdr}
+\pagestyle{fancyplain}
+\fancyhead{}											% No page header
+\fancyfoot[L]{}											% Empty
+\fancyfoot[C]{}											% Empty
+\fancyfoot[R]{\thepage}									% Pagenumbering
+\renewcommand{\headrulewidth}{0pt}			% Remove header underlines
+\renewcommand{\footrulewidth}{0pt}				% Remove footer underlines
+\setlength{\headheight}{13.6pt}
+
+
+%%% Equation and float numbering
+\numberwithin{equation}{section}		% Equationnumbering: section.eq#
+\numberwithin{figure}{section}			% Figurenumbering: section.fig#
+\numberwithin{table}{section}				% Tablenumbering: section.tab#
+
+
+%%% Maketitle metadata
+\newcommand{\horrule}[1]{\rule{\linewidth}{#1}} 	% Horizontal rule
+\newcommand{\code}[1]{\texttt{#1}}
+
+\title{
+		%\vspace{-1in}
+		\usefont{OT1}{bch}{b}{n}
+		\normalfont \normalsize \textsc{Massachusetts Institute of Technology} \\ [25pt]
+		\horrule{0.5pt} \\[0.4cm]
+		\huge Free Food: \\Context-Aware Substitution Engine \& Recipe-Oriented Domain Specific Language \\
+		\horrule{2pt} \\[0.5cm]
+}
+\author{
+		\normalfont 								\normalsize
+        Jackson Kearl, Sanchit Bhattacharjee, Cesar Guerrero\\[-3pt]		\normalsize
+        6.945 Final Project \\[-3pt] \normalsize
+        Prof. Gerald Sussman \\[-3pt] \normalsize
+        \today \normalsize
+        \\
+}
+\date{}
+
+
+%%% Begin document
+\begin{document}
+\maketitle
+\newpage
+\section{Project Overview \& Inspiration}
+\paragraph{}
+In the digital age, it has become increasingly easy for anyone to access any recipe in existence. With the countless allergies, pantry deficiencies and specific ingredient aversions across the human population. This reality, combined with the fact that recipes can only exist after some chef, or equally knowledgeable person, creates them, means that countless people are presented with recipes that they cannot create without some significant modifications every day.
+
+\paragraph{}
+As we cannot expect recipe creators to take the time to create every possible modification imaginable, for any possible constraint imaginable, we instead present a language for describing recipes in a easily extensible and parseable format, coupled with a substitution system to intelligently pair with a library of known to be reasonable substitutions, which together will be able to take arbitrary recipes and arbitrary constraints, and intelligently produce the reformed recipe which best fits a users individual constraints.
+
+\paragraph{}
+In more concrete terms, we first present a LISP-like domain specific language for representing recipes, particularly for food, but extensible to any set of instructions composed of combining elements into a whole in a recursive structure. We then present a system which is able to break down a recipe in this form into a more human-readable, step-by-step representation of the recipe, extract its ingredients, and output modified versions of the recipe based on things like dietary restrictions.
+
+\paragraph{}
+In summary, we here provide a system which will allow unto users what we like to call the \textit{Four Food Freedoms}\footnote{Text based, with modifications, on the Four Freedoms as presented on the Wikipedia article on The Free Software Definition, as opposed to the Four Freedoms as presented on gnu.org. The former uses a CC BY-SA 3.0, whereas the latter uses a NonDerivitive variant. Interesting that the very text saying that all software should be able to be modified, cannot itself be modified.}:
+\begin{enumerate}
+    \item[0.] Freedom to customize food as you wish, for any purpose.
+    \item Freedom to study the components of a food object, and change it to fit your desires. Access to the recipe is a precondition for this.
+    \item Freedom to redistribute copies of a food production so you can feed your neighbor.
+    \item Freedom to distribute copies of your modified recipes to others. By doing this you can give the whole foodie community a chance to benefit from your changes. Access to the recipe is a precondition for this.
+\end{enumerate}
+
+% I think the following paragraph is too specific for the intro. - jkearl
+
+% Ingredients will be the children of the domain specific language tree, and thus a list of ingredients will be compiled by finding all of the children and combining them into a list. From here, a step by step instruction form will be generated by parsing up the tree-based domain specific language to determine the order in which to perform steps to make the recipe happen. Finally, it will provide a means of performing intelligent and efficient \code{amb}-style message massing operations, which will make it possible to ask for a recipe constrained by, for instance, a dietary restriction, in which case the recipe will be modified to return a new valid recipe with the necessary substitutions to accommodate the dietary restriction.
+
+\newpage
+\section{The Domain Specific Language}
+\subsection{Overview \& Inspiration}
+The domain specific language logically consists of a list-based tree structure, where nodes with children define actions (which can be thought of as functions in a functional context) that are applied to all of the children of that node, and leaf nodes correspond to raw ingredients. Raw ingredients are expressed in the form (name amount unit). For example, baking 2 cups of flour and 1 cup of sugar together would be denoted by
+
+\begin{minted}[mathescape,
+               numbersep=5pt,
+               gobble=0,
+               frame=lines,
+               framesep=2mm]{scheme}
+
+((bake ((temp: 350 F) (time: 40 min)))
+  (flour ((amount: 2 cups)))
+  (sugar ((amount: 1 cup))))
+\end{minted}
+
+\paragraph{}
+This structure can be made increasingly complex as actions are performed on the results of other actions. In the context of the example above, if the flour had to be mixed with 1 cup of water beforehand, the resulting tree representing this would look like:
+
+\begin{minted}[mathescape,
+               numbersep=5pt,
+               gobble=0,
+               frame=lines,
+               framesep=2mm]{scheme}
+
+((bake ((temp: 350 F) (time: 40 min)))
+  ((mix ())
+    (flour ((amount: 2 cups)))
+    (water ((amount: 1 cup))))
+  (sugar ((amount: 1 cup))))
+\end{minted}
+\paragraph{}
+Such a structure isn't exactly the most readable form of a recipe, and as such, code must be written to output recipes in a conventional form that can be used by humans, in terms of an ingredients list and with step by step instructions. However, such a structure has implications on the extensibility of the system due to the fact that the logic makes sense in a functional context and as a result can be thought of as being evaluated, an extension that will be discussed further in the extensibility section of this report.
+
+
+\subsection{Ingredient Extraction}
+\paragraph{}
+One important feature to make such a system usable to humans is to extract a detailed list of ingredients from the domain-specific language. Such an extraction could be particularly useful not only because the process of gathering ingredients tends to be a separate practice than actually making the recipe, but because the full set of ingredients is not quite apparent or easy to see in the defined recipe language.
+
+\paragraph{}
+In order to implement this, it is important to note the distinction between the two types of objects in this tree: actions (or functions) and ingredients. It is of course the latter that we are concerned about in this system, so one has to be able to check whether an object is an ingredient or an action. There are a couple of ways to do this:
+\begin{itemize}
+\item Check if the second element in any list within the nested list `tree' recipe is a number or not (with the latter being either a string or a list itself)
+\item Note that an action can never be an `argument' to an ingredient, but at some level, every ingredient must be an `argument' to an action, meaning that ingredients correspond exactly to leaf nodes
+\end{itemize}
+
+The first option is simpler, but reliant on the fact that a number will never be passed to an action in this recipe structure, and thus may be less extensible, so the second option is probably better.
+
+\paragraph{}
+Once it is possible to identify the ingredients that can be found in our recipe language, these ingredients must be compiled. This can be stored as a list of pairs, where each pair corresponds to the form (ingredient amount). To match ingredients, one can just check if the name is the same as a previously processed ingredient and if so, combine it with the previous ingredient. It is on this combining and accumulation of amount that the task becomes harder due to the possibility of differing units. One way to handle this case is to essentially store sums of different units as is, such that the sum of a tablespoon and a cup of sugar would simply equate to ``1 tablespoon and 1 cup of sugar.'' However, potentially if a generic adder is built on top of this, it should be possible to get some more robust additions between units of the same ingredient for a more refined ingredient list.:
+
+
+\subsection{Instruction Extraction}
+\paragraph{}
+Another important feature of our system is to be able to extract the order in which instructions are executed. Because certain instructions require other instructions to be executed first, it is important that a correct ordering is established.
+
+\paragraph{}
+The process of extracting instructions is kept separate from the process of extracting ingredients. In order to do this, ingredient representation is replaced with a pointer to the ingredient found within the ingredient extraction list. This way, when a procedure is called that requires the instructions list, the ingredient pointer will be evaluated to whatever it points to. This way, if an ingredient substitution is made, and then a call to the instructions is made, the instructions will reflect any changes to the ingredients made by the substitution, without affecting functionality.
+
+\paragraph{}
+Instruction extraction is done by first doing a depth-first search for ingredients on the recipe tree. An ordering list is kept of all steps performed. The depth-first search is done by iterating through the nodes of the recipe tree. Each node is first checked to see what its children are. If a child is an ingredient, a pointer is created that points to said ingredient in the ingredient list. This pointer is then set to be part of an arguments list for the action that will be added to the ordering list. If a child is an action, it is added to an on-going stack of actions, and ``the results of <action>'' is added to the arguments list. Once all the children of an action are added to the arguments list, the action, along with its arguments are added to the ordering list. The next top-most action is popped from the action stack, and is subsequently analyzed. Once there are no more actions in the stack, the depth-first search is done.
+
+\paragraph{}
+The ordering list is then reversed, thus creating a topological sort of the actions. This new reverse-ordered list is what is kept and analyzed when calls to the instructions list are made. An example of a case when such a call might be made is a procedure that creates a human-readable recipe.
+
+\newpage
+\section{Substitution Engine}
+\subsection{Overview \& Inspiration}
+It is often the case that for whatever reason, a user might prefer not to execute a recipe directly as given, and instead would rather make some substitutions, for instance ingredient substitutions in order to remove allergens from the product or make the product more healthy, or process substitutions in order to reduce the cook time of a product or to make up for tools or equipment which are not readily available.
+
+\paragraph{}
+The system we are developing for representing these recipes should handle these preferences and constraints intelligently, performing the required substitutions to fit a user's preference. To do this we provide several methods for specifying appropriate substitutions, both via libraries and explicit mentions in recipe construction, and specifying constraints, taking forms ranging from a list of allergens/ingredients that must not be present, to a desire to create healthier options, to a provided list of ingredients which are available, and more.
+
+\paragraph{}
+We implement this using a form of message passing, where a given recipe can be passed a message such as \code{->gluten-free}, and would be expected to respond with a modified version of itself, or null, if no such modification is possible. In the simplest usage, this would be take the form of a recursive walk down the recipe tree, where the \code{->gluten-free} of each node simply recursively \code{->gluten-free}'s its children, and any ingredients defined to be glutenous return a modified version of themselves, taken from a library or recipe-specific \code{amb} system.
+
+\paragraph{}
+However, the substitution system also supports more advanced formulations. For example, we allow the user to define a set of components that they have access to (with optional supplied costs to optimize with as well), and with these constraints make their own messages to pass. It should be obvious that a simple \code{amb} operator would be prohibitively slow in this case, as there may be 10+ different ingredients in a recipe, and if the system does not have knowledge of which options are available, it would be stuck iterating through every possible wrong choice before it got somewhere acceptable. We alleviate this concern by adding the option to list available ingredients, which will give the system information about what sorts of things are acceptable and what are not, such that it isn't forced to try the power set of all possible substitutions across all possible ingredients in a recipe, just because a couple were known a priori to be prohibited.
+
+\subsection{Implementation (Selected Portions)}
+...
+
+...
+
+...
+
+\newpage
+\section{Extensibility \& Future Work}
+\subsection{Extensibility}
+\paragraph{}
+At its heart, this project serves the purpose of an intelligent \code{amb} operator, which is able to understand not just that a complaint occurred, but also why it occurred, and what options are available for resolving the issue, along with the relative costs of those resolutions, computed with a client-supplied cost function. This is a powerful construct, and it can be applied to a variety of different constrained optimization problems, including things like circuit construction, where one could pass a list of components they have available, ranging from IC's to resistors and capacitors, and an intelligent system would be able to determine a means of combination of these which mimics a passes circuit design.
+
+\paragraph{}
+As a short example of this system's extensibility, we have built a short demonstration program for determining the best set of resistors to choose from E24 (or any other collection, as desired), which will, when configured in some simple network, mimic a resistor of a given value:
+
+\begin{minted}[mathescape,
+               numbersep=5pt,
+               gobble=0,
+               frame=lines,
+               framesep=2mm]{scheme}
+; fan
+(lambda (params)
+        (amb
+          `((resistor ((measure: ,(list-amb E24))))
+            ,(find-in-dict-list 'measure: params))
+
+          `(((series ()) (resistor ((measure: ,(list-amb E24))))
+                         (resistor ((measure: ,(list-amb E24)))))
+            ,(find-in-dict-list 'measure: params))
+
+          `(((parallel ()) (resistor ((measure: ,(list-amb E24))))
+                           (resistor ((measure: ,(list-amb E24)))))
+            ,(find-in-dict-list 'measure: params))
+          `(((series ()) (resistor ((measure: ,(list-amb E24))))
+                         ((parallel ()) (resistor ((measure: ,(list-amb E24))))
+                                        (resistor ((measure: ,(list-amb E24))))))
+            ,(find-in-dict-list 'measure: params)))))))
+
+\end{minted}
+\paragraph{}
+\textit{In this step we did end up breaking the abstraction barrier a bit, in that we have used what could be considered the ``environment'' in the fan stage, whereas before we passed only the item being substituted to the fan stage. In the future, it might be a good idea to pass both the environment and the item being substituted to both the fan and reduce stages, as it allows for a simpler interaction with the backend.}
+\newpage
+
+\begin{minted}[mathescape,
+               numbersep=5pt,
+               gobble=0,
+               frame=lines,
+               framesep=2mm]{scheme}
+; reduce
+(define (target-value-amb environment)
+  (lambda (possibility)
+    (let ((substitution (car possibility))
+          (target (cadr possibility)))
+      (if (roughly-equal? (resistance (car possibility)) target (car environment))
+        (car possibility)
+        (amb)))))
+\end{minted}
+\paragraph{}
+\textit{Here, \code{resistance} computes the equivalent resistance of a network, and \code{roughly-equal?} is a predicate which returns true if the first and second arguments are equal to the precision specified by the third.}
+
+\paragraph{}
+\textit{In this system, \code{environment} is a pair consisting of (desired precision, list of resistors available).}
+
+
+\begin{minted}[mathescape,
+               numbersep=5pt,
+               gobble=0,
+               frame=lines,
+               framesep=2mm]{scheme}
+; acceptability predicate
+(define (acceptable-given-environment environment)
+    (lambda (item)
+      (if (eqv? (car item) 'resistor)
+        (bool (memv (find-in-dict-list 'measure: (cadr item)) (cdr environment)))
+        #t)))
+\end{minted}
+
+\paragraph{}
+As we can see, with these three simple changes from the existing codebase, we are able to get the program to behave in a very different way. With a bit more work, it would not be difficult to, for instance, return the best solution as determined by some cost function of number of resistors versus exactness, and return that, rather than just a solution within appropriate boundaries, using the power of our system to go from this relatively abstracted \code{amb} procedure to a more intelligent and useful cost optimization program.
+
+\paragraph{}
+\textit{Aside: One issue that kept arising while developing the platform was where to draw the line between allowing everything and restricting to a small set of procedures. Restriction keeps the program simple, for both the creator and the user, but in this case we may have gone too far. Our system expects the world to use our ``magic bullet'' fan-reduce API for everything, when sometimes it just isn't possible. In this example, where we have needed to break the very abstraction barrier that we set up, and although the design of the platform made it easy to do so, perhaps it shouldn't have been required in the first place.}
+
+\paragraph{}
+The full code for the circuit system, with documentation and example usage, is available with the rest of the code on github, at \code{sub-engine/circuit-demo.scm}.
+
+\paragraph{}
+The domain-specific language also helps with extensibility here as one could easily add functionality to each of the actions, such as returning the time that action (such as baking) should generally take. The tree-like structure of this language exactly allows such functionality to be recursive. Such an idea could help output other useful information such as estimating the amount of time a recipe would take by summing up the individual output time of each action, for instance.
+
+\subsection{Future Work}
+There are many different features and improvements which could be added to this system in the future. A few that we were able to com up with, in approximately increasing order of difficulty, include:
+\begin{itemize}
+\item Increase human readability of instruction output.
+\item Provide a means to go from generated human readable recipe to DSL tree.
+\item Provide a means for operating upon and accessing the items being operated upon in a procedure in the fan-reduce stage.
+\item Allow for substitutions to propagate changes up the tree rather than strictly down
+\item Automatically generate recipes from natural language representations.
+\end{itemize}
+
+\newpage
+\section{Conclusion \& Final Thoughts}
+
+\end{document}
