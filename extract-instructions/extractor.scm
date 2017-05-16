@@ -29,16 +29,9 @@
     (execute-extract-deepest recipe instructions)
     (cdr instructions)))
 
-(define (reverse1 l)
-  (if (null? l)
-     '()
-     (append (reverse1 (cdr l)) (list (car l)))
-  )
-)
-
 
 (define (pretty-print-instructions recipe)
-  (let ((instructions (reverse1 (recipe->instructions recipe)))
+  (let ((instructions (recipe->instructions recipe))
         (counter 1))
     (map (lambda (instruction)
         (display "\nStep ")

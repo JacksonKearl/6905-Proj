@@ -13,8 +13,8 @@
         (garlic ((amount: 2 unit)))
         (lemon-juice ((amount: 2 tablespoons)))))))
 
-(pretty-print-recipe 'falfel falafel)
+(pretty-print-recipe 'falafel falafel)
 
 (define pantry '(() (deep-fry lemon-juice parsley)))
 
-(pretty-print-recipe 'falfel  (customize-recipe falafel pantry))
+(pretty-print-recipe 'falafel  (customize-recipe falafel pantry))
