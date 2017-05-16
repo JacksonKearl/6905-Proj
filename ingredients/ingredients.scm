@@ -7,6 +7,17 @@
 (define (ingredient? node)
   (and (list? node) (leaf? node) (eq? (length node) 3)))
 
+(define (fold1 kons knil lst)
+  (if (null? lst)
+      knil
+      (fold1 kons (kons (car lst) knil) (cdr lst))))
+
+(define (flatten lists)
+  (fold1 (lambda (right left)
+           (append left (flatten right)))
+         '()
+         lists))
+
 (define (split-ingredients-list nodelist)
   (if (and (list? nodelist) (not (null? nodelist)))
       (let ((curnode (car nodelist)))
@@ -14,8 +25,9 @@
 	    (cons curnode (split-ingredients-list (cdr
 							    nodelist)))
 	    (if (list? curnode)
-		(cons (split-ingredients-list (children curnode))
-			(split-ingredients-list (cdr nodelist)))
+		(flatten
+		 (cons (split-ingredients-list (children curnode))
+		       (split-ingredients-list (cdr nodelist))))
 		(split-ingredients-list (cdr nodelist)))))
       '()))
 
@@ -54,9 +66,9 @@
 (define ingredient-simplifier
   (rule-simplifier
    (list
-
+    
     (rule `((?? y) (((?? x))) (?? z))
-	  `(,@y (,@x) ,@z)) 
+	  `(,@y (,@x) ,@z))
 
     (rule `((?? x) (? a) (? b) (?? y))
 	  (and (ingredient<? b a)
@@ -94,3 +106,24 @@
 
 (define (get-ingredients recipe)
   (ingredient-simplifier (split-ingredients-list recipe)))
+
+#|Using top level extract ingredients (which glues get-ingredients to
+a translator of the description supporting recipe language):
+
+ (extract-ingredients '((deep-fry ((temp: 350 F) (time: 4 min) (name: final-product!)))
+    ((let-rest ((time: 2 hour) (name: rested-dough)))
+      ((food-process ((time: 5 min) (description: "scraping occasionally") (name: processed-ingredients)))
+        ((soak ((time: 12 hour) (name: soaked-beans)))
+          (garbonzo-bean ((amount: 1/2 cup) (description: "cannot be
+canned!")))
+	  (lemon-juice ((amount: 1 tsp))))
+        ((dice ((description: "coarse") (name: diced-onions)))
+          (yellow-onion ((amount: 1/4 unit))))
+        ((chop ((description: "coarse") (name: chopped-parsley)))
+          (parsley ((amount: 1/4 cup))))
+        (garlic ((amount: 2 unit)))
+        (lemon-juice ((amount: 2 tbsp)))))))
+;Value 37: ((garbonzo-bean 1/2 cup) (garlic 2 unit) (lemon-juice 7/3
+tbsp) (parsley 1/4 cup) (yellow-onion 1/4 unit))
+
+|#
