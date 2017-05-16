@@ -17,4 +17,4 @@
 
 (define pantry '(() (deep-fry lemon-juice parsley)))
 
-(pretty-print-recipe 'falafel  (customize-recipe falafel pantry))
+(pretty-print-recipe 'falafel   (customize-recipe falafel pantry))
