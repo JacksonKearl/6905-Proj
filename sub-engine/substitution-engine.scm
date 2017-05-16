@@ -60,6 +60,7 @@
           (cons (car recipe)
                 (map (lambda (component) (reform-recipe component environment substitutions)) (cdr recipe)))))))
 
+; same as above, but we use the defualt substitution library
 (define (customize-recipe recipe environment)
   (let ((acceptable (acceptable-given-environment environment)))
     (if (base-component? recipe)
