@@ -18,4 +18,4 @@
 (define pantry '(() (deep-fry lemon-juice parsley)))
 
 (amb-possibility-list (print-recipe
-  (reform-recipe falafel pantry substitutions)))
+  (customize-recipe falafel pantry)))

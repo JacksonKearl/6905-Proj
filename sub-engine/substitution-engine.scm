@@ -52,7 +52,7 @@
   (let ((acceptable (acceptable-given-environment environment)))
     (if (base-component? recipe)
       (if (not (acceptable recipe))
-          (sub-base-component recipe environment substitutions)
+          (sub-base-component  recipe environment substitutions)
           recipe)
       (if (not  (acceptable (car recipe)))
           (cons (sub-means-of-combination (car recipe) environment substitutions)
