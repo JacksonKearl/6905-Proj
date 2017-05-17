@@ -12,9 +12,9 @@
 %
 % 3 Substitution Engine
 % 3.1 Overview & Inspiration
-%   jkearl   -- incomplete
+%   jkearl   -- complete
 % 3.2 Implementation
-%   jkearl   -- incomplete
+%   jkearl   -- complete
 %
 % 4 Extensibility & Future Work
 % 4.1 Extensibility
@@ -100,10 +100,9 @@
 \author{
 		\normalfont 								\normalsize
         Jackson Kearl, Sanchit Bhattacharjee, Cesar Guerrero\\[-3pt]		\normalsize
-        6.945 Final Project \\[-3pt] \normalsize
+        github.com/JacksonKearl/FreeFood \\[-3pt] \normalsize
         Prof. Gerald Sussman \\[-3pt] \normalsize
-        \today \normalsize
-        \\
+        \today \\\normalsize
 }
 \date{}
 
@@ -257,15 +256,213 @@ It is often the case that for whatever reason, a user might prefer not to execut
 \paragraph{}
 The system we are developing for representing these recipes should handle these preferences and constraints intelligently, performing the required substitutions to fit a user's preference. To do this we provide a library of viable substitutions, along with several methods for specifying appropriate substitutions. The user will be able to input arbitrary constraints, taking forms ranging from a list of allergens/ingredients that must not be present, to a provided list of ingredients which are available, and more.
 
+\paragraph{}
+At the heart of this system is an operation which is best described as a ``fan-reduce'' substitution process. In this process, we provide the engine with two separate functions for use in determine what substitution to make. For the `fan' stage, we define a procedure which will be passed an item to be replaced. The procedure will take this item, and return all possible items which could replace it. This output is then passed directly to the `reduce' procedure, which will be passed first the environment to create a filter specific to the given environment. This filter is expected to reduce the passed list of all possible items from the fan stage down to one item, which it will then return to the caller. We can see that by including various extra detail in the fan output, such as some cost function or similar, we are able to use the reduce function to perform a wide variety of optimization methods. More possible implementations of this fan/reduce setup, along with possible limitations, are described in sections following.
+
 \subsection{Implementation (Selected Portions)}
 \paragraph{}
-...
+The user begins an exchange with the substitution engine with a recipe in the DSL format above specified. In this this example we walk through the falafel example, as present in the codebase under \code{sub-engine/main.scm}. We start out by defining a starting recipe and the limitations we will be enforcing:
+
+\begin{minted}[mathescape,
+               numbersep=5pt,
+               gobble=0,
+               frame=lines,
+               framesep=2mm]{scheme}
+(define pantry '(() (deep-fry lemon-juice parsley)))
+
+(define falafel
+  '((deep-fry ((temp: 350 F) (time: 4 min)))
+    ((let-rest ((time: 2 hour)))
+      ((food-process ((time: 5 min)
+                      (description: "scrape occasionally")))
+        ((soak ((time: 12 hour)))
+          (garbonzo-bean ((amount: 1/2 cup)
+                          (description: "cannot be canned!"))))
+        ((dice ((description: "coarse")))
+          (yellow-onion ((amount: 1/4 unit))))
+        ((chop ((description: "coarse")))
+          (parsley ((amount: 1/4 cup))))
+        (garlic ((amount: 2 unit)))
+        (lemon-juice ((amount: 2 tablespoons)))))))
+\end{minted}
+
 \paragraph{}
-...
-\paragraph{}
-...
+We next make a call to the main interface of the substitution engine, \code{customize-recipe}, which accepts as parameters a recipe and a \code{(things to use, things not to use)} pair. We wrap this in \code{amb-possibility-list} so as to receive all possible legal substitutions:
+
+\begin{minted}[mathescape,
+               numbersep=5pt,
+               gobble=0,
+               frame=lines,
+               framesep=2mm]{scheme}
+(amb-possibility-list (print-recipe
+  (customize-recipe falafel pantry)))
+\end{minted}
+
+This calls the \code{customize-recipe} procedure, as defined in \code{sub-engine/substitution-engine.scm}. This procedure walks the tree from the root downwards, recursively determining if each component is legal given the passed environment:
 
 
+\begin{minted}[mathescape,
+               numbersep=5pt,
+               gobble=0,
+               frame=lines,
+               framesep=2mm]{scheme}
+(define (customize-recipe recipe environment)
+  (let ((acceptable (acceptable-given-environment environment)))
+    (if (base-component? recipe)
+      (if (not (acceptable recipe))
+          (sub-base-component recipe environment substitutions)
+          recipe)
+      (if (not  (acceptable (car recipe)))
+          (cons (sub-means-of-combination
+                     (car recipe) environment substitutions)
+                (map (lambda (component)
+                        (reform-recipe
+                            component environment substitutions))
+                     (cdr recipe)))
+          (cons (car recipe)
+                (map (lambda (component)
+                        (reform-recipe
+                            component environment substitutions))
+                     (cdr recipe)))))))
+\end{minted}
+\paragraph{}
+We see that those components decided to be invalid with respect to the environment are replaced via calls to either \code{sub-means-of-combination} or \code{sub-base-component}, depending on their type. These two procedures are effectively the same, but separated for possible future improvements. Sample code shown below:
+
+\begin{minted}[mathescape,
+               numbersep=5pt,
+               gobble=0,
+               frame=lines,
+               framesep=2mm]{scheme}
+(define (sub-means-of-combination
+             means-of-combination environment substitutions)
+  ((find-in-dict-list
+       (car means-of-combination)
+       substitutions)
+    environment means-of-combination))
+\end{minted}
+
+\paragraph{}
+In this substitutions procedure, we finally look in the substitutions dictionary for an appropriate substitution. The substitution library is defined in a format such as below (from \code{sub-engine/demo.scm}:
+\begin{minted}[mathescape,
+               numbersep=5pt,
+               gobble=0,
+               frame=lines,
+               framesep=2mm]{scheme}
+(define substitutions `(
+
+    ,(create-substitution
+      'deep-fry
+      iter-amb
+      (lambda (params)
+        (let ((temp (find-in-dict-list-or-default 'temp: params 350))
+              (params (del-from-dict-list 'temp: params)))
+
+          `(,(cond ((< temp 250) `(pan-fry ,(cons '(temp: low) params)))
+                   ((> temp 400) `(pan-fry ,(cons '(temp: high) params)))
+                   (else         `(pan-fry ,(cons '(temp: med) params))))))))
+
+    ,(create-substitution
+      'parsley
+      iter-amb
+      (lambda (params)
+        `((italian-parsley ,params))))
+
+    ,(create-substitution
+      'lemon-juice
+      iter-amb
+      (lambda (params)
+        `(((combine ((name: diluted-lime-juice)))
+            (lime-juice ,(scale params '((amount: 1/2))))
+            (water      ,(scale params '((amount: 1/2)))))
+          ((boil ((time: 5 min) (name: concentrated-orange-juice)))
+            (orange-juice ,(scale params '((amount: 2))))))))))
+
+\end{minted}
+
+\paragraph{}
+We see that the fan steps are specific to the individual component, specifying things such as the item or procedure to replace a given item or procedure with, along with various transformations which should be applied to that item or procedures parameters when creating the substitution. However, while the fan steps are all unique, there is a single common reduce step shared across all these substitutions, specifically the \code{iter-amb} procedure, which when given an environment returns a amb-style filter function specific to that environment. We define the \code{iter-amb} procedure as follows:
+
+\begin{minted}[mathescape,
+               numbersep=5pt,
+               gobble=0,
+               frame=lines,
+               framesep=2mm]{scheme}
+; return a function which, when given a list of possible substitutions,
+; returns an amb which may be any of the valid solutions w.r.t the given
+; environment existing among that list.
+(define (iter-amb environment)
+  (let ((acceptable?
+           (lambda (item)
+               ((acceptable-given-environment-recursive environment)
+                   item))))
+    (lambda (possibilities)
+      (list-amb (filter acceptable? possibilities)))))
+\end{minted}
+
+
+Additionally, we let \code{create-substitution} be a procedure which converts this into a dict-list of lambdas which, when given an item and an environment, will perform the fan-map procedure outlined above, returning a possible substitution:
+
+\begin{minted}[mathescape,
+               numbersep=5pt,
+               gobble=0,
+               frame=lines,
+               framesep=2mm]{scheme}
+; return (symbol, lambda) pair such that the lambda, when
+; passed an environment and a (sym (args ...)) list
+; will return a (sym ((args... )) (amb) list-item which is
+; a valid substitution for the provided (sym (args ...)) value,
+; subject to the restrictions put in place by the environment.
+;
+; possibilities-generator should be a function specific to this
+; symbol, which, when given an arg list, returns an object which,
+; when passed to sub-generator-system (called with the environment),
+; yields some item which may replace this symbol.
+(define (create-substitution sym sub-generator-system
+                                possibilities-generator)
+  (list
+    sym
+    (lambda (environment item)
+      (if (null? (cdr item))
+        ((sub-generator-system environment)
+             (possibilities-generator '()))
+        ((sub-generator-system environment)
+             (possibilities-generator (cadr item)))))))
+\end{minted}
+
+\paragraph{}
+Finally, given this stack, we can see how the \code{sub-means-of-combination} is able to call upon the fan-reduce substitution procedure implemented in \code{create-substitution} via functions such as \code{iter-amb} and the provided \code{substitutions} dictionary. Upon receiving it's substitution, \code{sub-means-of-combination} is able to pass that back up to \code{customize-recipe}, and finally, after the rest of the substitutions have been made, we receive an output such as below:
+
+\begin{minted}[mathescape,
+               numbersep=5pt,
+               gobble=0,
+               frame=lines,
+               framesep=2mm]{scheme}
+((pan-fry ((temp: med) (time: 4 min)))
+ ((let-rest ((time: 2 hour)))
+  ((food-process ((time: 5 min) (description: "scrape occasionally")))
+   ((soak ((time: 12 hour)))
+    (garbonzo-bean ((amount: 1/2 cup) (description: "cannot be canned!"))))
+   ((dice ((description: "coarse"))) (yellow-onion ((amount: 1/4 unit))))
+   ((chop ((description: "coarse"))) (italian-parsley ((amount: 1/4 cup))))
+   (garlic ((amount: 2 unit)))
+   ((combine ((name: diluted-lime-juice)))
+    (lime-juice ((amount: 1 tablespoons)))
+    (water ((amount: 1 tablespoons)))))))
+
+((pan-fry ((temp: med) (time: 4 min)))
+ ((let-rest ((time: 2 hour)))
+  ((food-process ((time: 5 min) (description: "scrape occasionally")))
+   ((soak ((time: 12 hour)))
+    (garbonzo-bean ((amount: 1/2 cup) (description: "cannot be canned!"))))
+   ((dice ((description: "coarse"))) (yellow-onion ((amount: 1/4 unit))))
+   ((chop ((description: "coarse"))) (italian-parsley ((amount: 1/4 cup))))
+   (garlic ((amount: 2 unit)))
+   ((boil ((time: 5 min) (name: concentrated-orange-juice)))
+    (orange-juice ((amount: 4 tablespoons)))))))
+\end{minted}
+
+\paragraph{}
+We see that we have replaced the original missing ingredients with their properly scaled solutions, and we have found and returned every possible substituted recipe, as desired.
 
 
 
