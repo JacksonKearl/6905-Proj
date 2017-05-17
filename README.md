@@ -1,6 +1,6 @@
-# Ambgen: Recipes, your way
+# FreeFood: Recipes, your way
 
-Ambgen consists of two central components:
+FreeFood consists of two central components:
 
 - a powerful, yet still simple and easily extensible substitution engine, capable
   of taking recipes for the construction of a wide variety of modular systems
@@ -15,13 +15,13 @@ Ambgen consists of two central components:
 
 ## The Engine
 
-The Ambgen substitution engine features two distinct stages: a conflict detection step,
+The FreeFood substitution engine features two distinct stages: a conflict detection step,
 where we walk the recipe tree from the root downwards, marking nodes which are not
 permissible under the given environment, followed by a conflict resolution step,
 where we walk the conflicting nodes from the leaves upwards, repeatedly calling a
 modular, two stage conflict resolution algorithm.
 
-Ambgen works off of a representation of instructions as a recursive LISP-like language
+FreeFood works off of a representation of instructions as a recursive LISP-like language
 consisting of lists of `(symbol ((arg1: val1)... )` pairs, where the first element of
 a given list is some means of combination for the rest of the items in that list, which
 may be either lists themselves, or the `(symbol ((arg1: val1)... )` pair discussed above.
